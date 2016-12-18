@@ -18,6 +18,8 @@ This is based on the implementation [neural-style-audio](https://github.com/Dmit
 
 [Song style transfer AI test](https://www.youtube.com/watch?v=iUujo7i6P3w)
 
+![Spectrum](https://raw.githubusercontent.com/rupeshs/neuralsongstyle/master/plots/spectrum.jpg "Spectrum")
+
 ### References
 [Audio texture synthesis and style transfe](http://dmitryulyanov.github.io/audio-texture-synthesis-and-style-transfer/)
 
