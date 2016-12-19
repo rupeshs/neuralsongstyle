@@ -1,4 +1,4 @@
-# neuralsongstyle
+# Neural Song Style
 Transferring the style from one song onto another using artificial intelligence.
 
 This is based on the implementation [neural-style-audio](https://github.com/DmitryUlyanov/neural-style-audio-tf) by Dmitry and Vadim.
