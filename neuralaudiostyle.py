@@ -4,24 +4,28 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sys import stderr
+import argparse
 
-CONTENT_FILENAME = "F:/Om/Projects/AudioStyleTransfer/neural-style-audio-tf/inputs/fade.mp3"
-STYLE_FILENAME = "F:/Om/Projects/AudioStyleTransfer/neural-style-audio-tf/inputs/dont.mp3"
+parser = argparse.ArgumentParser(description='Neurals style transfer for songs')
+parser.add_argument('--content',help='Content audio path',required=True)
+parser.add_argument('--style',help='Style audio path',required=True)
+parser.add_argument('--out',help='Styled audio path',required=True)
+args = parser.parse_args()
 
 # Reads wav file and produces spectrum
 # Fourier phases are ignored
 N_FFT = 2048
 def read_audio_spectrum(filename):
     x, fs = librosa.load(filename)
-	print("sampling rate :",fs)
+    print("sampling rate :",fs)
     S = librosa.stft(x, N_FFT)
     p = np.angle(S)
     
     S = np.log1p(np.abs(S[:,:430]))  
     return S, fs
     
-a_content, fs = read_audio_spectrum(CONTENT_FILENAME)
-a_style, fs = read_audio_spectrum(STYLE_FILENAME)
+a_content, fs = read_audio_spectrum(args.content)
+a_style, fs = read_audio_spectrum(args.style)
 
 N_SAMPLES = a_content.shape[1]
 N_CHANNELS = a_content.shape[0]
@@ -121,6 +125,5 @@ for i in range(500):
     x = librosa.istft(S)
     p = np.angle(librosa.stft(x, N_FFT))
 
-OUTPUT_FILENAME = 'F:/Om/Projects/AudioStyleTransfer/neural-style-audio-tf/outputs/outdont.wav'
-librosa.output.write_wav(OUTPUT_FILENAME, x, fs)
+librosa.output.write_wav(args.out, x, fs)
 
