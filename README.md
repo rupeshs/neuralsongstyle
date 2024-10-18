@@ -12,6 +12,17 @@ This is based on the implementation [neural-style-audio](https://github.com/Dmit
 - python (tested with python 2.7/3.5)
 - tensorflow
 - librosa
+- tkinter
+
+### Using the tkinter GUI
+A tkinter-based GUI is provided for easier interaction with the neural song style transfer process. The GUI allows users to select content and style audio files, specify the output file path, and start the style transfer process with a single click.
+
+#### Instructions
+1. Run the `tkinter_gui.py` script to launch the GUI.
+2. Use the "Browse" buttons to select the content and style audio files.
+3. Specify the output file path where the styled audio will be saved.
+4. Click the "Start Style Transfer" button to begin the process.
+5. The progress of the style transfer will be displayed in the GUI.
 
 ### Demo 
 
