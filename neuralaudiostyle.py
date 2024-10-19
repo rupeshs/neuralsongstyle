@@ -4,13 +4,18 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sys import stderr
+import logging
+
+# Configure logging settings
+logging.basicConfig(filename='neuralaudiostyle.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Reads wav file and produces spectrum
 # Fourier phases are ignored
 N_FFT = 2048
 def read_audio_spectrum(filename):
+    logging.debug(f'Reading audio spectrum from file: {filename}')
     x, fs = librosa.load(filename)
-    print("sampling rate :",fs)
+    logging.debug(f'Sampling rate: {fs}')
     S = librosa.stft(x, N_FFT)
     p = np.angle(S)
     
@@ -18,11 +23,12 @@ def read_audio_spectrum(filename):
     return S, fs
 
 def train_style(a_content, a_style):
+    logging.debug('Training style')
     N_SAMPLES = a_content.shape[1]
     N_CHANNELS = a_content.shape[0]
     a_style = a_style[:N_CHANNELS, :N_SAMPLES]
 
-    print("audio style train")
+    logging.debug(f'Audio style train with N_SAMPLES: {N_SAMPLES}, N_CHANNELS: {N_CHANNELS}')
     N_FILTERS = 4096
 
     a_content_tf = np.ascontiguousarray(a_content.T[None,None,:,:])
@@ -46,10 +52,11 @@ def train_style(a_content, a_style):
     return content_features, style_gram
 
 def optimize(content_features, style_gram, N_SAMPLES, N_CHANNELS, N_FILTERS, output_path, fs):
+    logging.debug('Optimizing')
     ALPHA= 1e-2
     learning_rate= 1e-3
     iterations = 100
-    print("optimise")
+    logging.debug(f'Optimization parameters - ALPHA: {ALPHA}, learning_rate: {learning_rate}, iterations: {iterations}')
     result = None
 
     g = torch.nn.Sequential(
@@ -91,6 +98,7 @@ def optimize(content_features, style_gram, N_SAMPLES, N_CHANNELS, N_FILTERS, out
     librosa.output.write_wav(output_path, x, fs)
 
 def perform_style_transfer(content, style, output):
+    logging.debug(f'Performing style transfer - content: {content}, style: {style}, output: {output}')
     a_content, fs = read_audio_spectrum(content)
     a_style, _ = read_audio_spectrum(style)
 
