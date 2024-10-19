@@ -12,6 +12,8 @@ This is based on the implementation [neural-style-audio](https://github.com/Dmit
 - python (tested with python 2.7/3.5)
 - tensorflow
 - librosa
+- scipy==1.5.4
+- numpy==1.19.5
 
 ### Demo 
 

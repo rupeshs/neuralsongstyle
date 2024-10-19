@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "build": "pip install tensorflow librosa",
+    "launch": "python tkinter_gui.py",
+    "test": "echo \"No tests available in this repository.\""
+  }
+}
