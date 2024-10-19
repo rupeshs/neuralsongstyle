@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import neuralaudiostyle
+import logging
+
+logging.basicConfig(filename='tkinter_gui.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def select_file(entry):
     file_path = filedialog.askopenfilename()
@@ -15,8 +18,10 @@ def start_style_transfer(content_entry, style_entry, output_entry):
     try:
         neuralaudiostyle.perform_style_transfer(content, style, output)
         messagebox.showinfo("Success", "Style transfer complete!")
+        logging.info("Style transfer complete!")
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {e}")
+        logging.error(f"Error during style transfer: {e}")
 
 def create_gui():
     root = tk.Tk()

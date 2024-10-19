@@ -17,13 +17,17 @@ logging.basicConfig(filename='neuralaudiostyle.log', level=logging.INFO, format=
 
 N_FFT = 2048
 def read_audio_spectrum(filename):
-    x, fs = librosa.load(filename, sr=None)
-    logging.info(f"Loaded {filename} with sampling rate {fs}")
-    S = librosa.stft(x, N_FFT)
-    p = np.angle(S)
-    
-    S = np.log1p(np.abs(S[:,:430]))  
-    return S, fs
+    try:
+        x, fs = librosa.load(filename, sr=None)
+        logging.info(f"Loaded {filename} with sampling rate {fs}")
+        S = librosa.stft(x, N_FFT)
+        p = np.angle(S)
+        
+        S = np.log1p(np.abs(S[:,:430]))  
+        return S, fs
+    except Exception as e:
+        logging.error(f"Error loading {filename}: {e}")
+        raise
 
 def train_style(a_content, a_style):
     N_SAMPLES = a_content.shape[1]
