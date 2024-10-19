@@ -10,7 +10,7 @@ This is based on the implementation [neural-style-audio](https://github.com/Dmit
 
 ### Dependencies
 - python (tested with python 2.7/3.5)
-- tensorflow
+- torch
 - librosa
 - tkinter
 
@@ -38,4 +38,3 @@ A tkinter-based GUI is provided for easier interaction with the neural song styl
 
 ### References
 [Audio texture synthesis and style transfe](http://dmitryulyanov.github.io/audio-texture-synthesis-and-style-transfer/)
-

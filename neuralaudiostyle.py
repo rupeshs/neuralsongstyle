@@ -1,4 +1,4 @@
-import tensorflow as tf
+import torch
 import librosa
 import os
 import numpy as np
@@ -32,26 +32,16 @@ def train_style(a_content, a_style):
     std = np.sqrt(2) * np.sqrt(2.0 / ((N_CHANNELS + N_FILTERS) * 11))
     kernel = np.random.randn(1, 11, N_CHANNELS, N_FILTERS)*std
 
-    g = tf.Graph()
-    with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
-        # data shape is "[batch, in_height, in_width, in_channels]",
-        x = tf.placeholder('float32', [1,1,N_SAMPLES,N_CHANNELS], name="x")
+    g = torch.nn.Sequential(
+        torch.nn.Conv2d(1, N_FILTERS, (1, 11)),
+        torch.nn.ReLU()
+    )
 
-        kernel_tf = tf.constant(kernel, name="kernel", dtype='float32')
-        conv = tf.nn.conv2d(
-            x,
-            kernel_tf,
-            strides=[1, 1, 1, 1],
-            padding="VALID",
-            name="conv")
+    content_features = g(torch.tensor(a_content_tf, dtype=torch.float32)).detach().numpy()
+    style_features = g(torch.tensor(a_style_tf, dtype=torch.float32)).detach().numpy()
 
-        net = tf.nn.relu(conv)
-
-        content_features = net.eval(feed_dict={x: a_content_tf})
-        style_features = net.eval(feed_dict={x: a_style_tf})
-
-        features = np.reshape(style_features, (-1, N_FILTERS))
-        style_gram = np.matmul(features.T, features) / N_SAMPLES
+    features = np.reshape(style_features, (-1, N_FILTERS))
+    style_gram = np.matmul(features.T, features) / N_SAMPLES
 
     return content_features, style_gram
 
@@ -61,51 +51,37 @@ def optimize(content_features, style_gram, N_SAMPLES, N_CHANNELS, N_FILTERS, out
     iterations = 100
     print("optimise")
     result = None
-    with tf.Graph().as_default():
-        x = tf.Variable(np.random.randn(1,1,N_SAMPLES,N_CHANNELS).astype(np.float32)*1e-3, name="x")
 
-        kernel_tf = tf.constant(kernel, name="kernel", dtype='float32')
-        conv = tf.nn.conv2d(
-            x,
-            kernel_tf,
-            strides=[1, 1, 1, 1],
-            padding="VALID",
-            name="conv")
+    g = torch.nn.Sequential(
+        torch.nn.Conv2d(1, N_FILTERS, (1, 11)),
+        torch.nn.ReLU()
+    )
 
-        net = tf.nn.relu(conv)
+    x = torch.tensor(np.random.randn(1,1,N_SAMPLES,N_CHANNELS).astype(np.float32)*1e-3, requires_grad=True)
+    optimizer = torch.optim.LBFGS([x], lr=learning_rate, max_iter=iterations)
 
-        content_loss = ALPHA * 2 * tf.nn.l2_loss(
-                net - content_features)
-
+    def closure():
+        optimizer.zero_grad()
+        net = g(x)
+        content_loss = ALPHA * 2 * torch.nn.functional.mse_loss(net, torch.tensor(content_features, dtype=torch.float32))
         style_loss = 0
 
-        _, height, width, number = map(lambda i: i.value, net.get_shape())
-
+        _, height, width, number = net.shape
         size = height * width * number
-        feats = tf.reshape(net, (-1, number))
-        gram = tf.matmul(tf.transpose(feats), feats)  / N_SAMPLES
-        style_loss = 2 * tf.nn.l2_loss(gram - style_gram)
+        feats = net.view(-1, number)
+        gram = torch.matmul(feats.t(), feats) / N_SAMPLES
+        style_loss = 2 * torch.nn.functional.mse_loss(gram, torch.tensor(style_gram, dtype=torch.float32))
 
-        # Overall loss
         loss = content_loss + style_loss
+        loss.backward()
+        return loss
 
-        opt = tf.contrib.opt.ScipyOptimizerInterface(
-              loss, method='L-BFGS-B', options={'maxiter': 300})
-
-        # Optimization
-        with tf.Session() as sess:
-            sess.run(tf.initialize_all_variables())
-
-            print('Started optimization.')
-            opt.minimize(sess)
-
-            print ('Final loss:', loss.eval())
-            result = x.eval()
+    optimizer.step(closure)
+    result = x.detach().numpy()
 
     a = np.zeros_like(a_content)
     a[:N_CHANNELS,:] = np.exp(result[0,0].T) - 1
 
-    # This code is supposed to do phase reconstruction
     p = 2 * np.pi * np.random.random_sample(a.shape) - np.pi
     for i in range(500):
         S = a * np.exp(1j*p)
