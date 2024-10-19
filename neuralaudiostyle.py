@@ -79,7 +79,7 @@ def optimize(content_features, style_gram, N_SAMPLES, N_CHANNELS, N_FILTERS, out
     optimizer.step(closure)
     result = x.detach().numpy()
 
-    a = np.zeros_like(a_content)
+    a = np.zeros_like(content_features[0,0].T)
     a[:N_CHANNELS,:] = np.exp(result[0,0].T) - 1
 
     p = 2 * np.pi * np.random.random_sample(a.shape) - np.pi
@@ -92,7 +92,7 @@ def optimize(content_features, style_gram, N_SAMPLES, N_CHANNELS, N_FILTERS, out
 
 def perform_style_transfer(content, style, output):
     a_content, fs = read_audio_spectrum(content)
-    a_style, fs = read_audio_spectrum(style)
+    a_style, _ = read_audio_spectrum(style)
 
     N_SAMPLES = a_content.shape[1]
     N_CHANNELS = a_content.shape[0]
